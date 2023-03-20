@@ -9,6 +9,7 @@ using Grand.Domain.Payments;
 using Grand.Infrastructure;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
+using Grand.Business.Core.Interfaces.Common.Stores;
 
 namespace Payments.BankTransfer
 {
@@ -19,6 +20,7 @@ namespace Payments.BankTransfer
 
         private readonly BankTransferPaymentSettings _bankTransferPaymentSettings;
         private readonly IOrderService _orderService;
+        private readonly IStoreService _storeService;
         private readonly IHttpContextAccessor _httpContextAccessor;
 
         public BankTransferPaymentProvider(
@@ -26,12 +28,14 @@ namespace Payments.BankTransfer
             IServiceProvider serviceProvider,
             BankTransferPaymentSettings bankTransferPaymentSettings,
             IOrderService orderService,
+            IStoreService storeService,
             IHttpContextAccessor httpContextAccessor)
         {
             _translationService = translationService;
             _serviceProvider = serviceProvider;
             _bankTransferPaymentSettings = bankTransferPaymentSettings;
             _orderService = orderService;
+            _storeService = storeService;
             _httpContextAccessor = httpContextAccessor;
         }
 
@@ -83,7 +87,12 @@ namespace Payments.BankTransfer
 
             var order = await _orderService.GetOrderByGuid(paymentTransaction.OrderGuid);
 
-            _httpContextAccessor.HttpContext.Response.Redirect(BankTransferPaymentDefaults.PaymentInstructionsUrl + $"/{order.Id}");
+            // build URL
+            var store = await _storeService.GetStoreById(order.StoreId);
+
+            var baseUrl = (store.SslEnabled ? "https://" : "http://") + _httpContextAccessor.HttpContext.Request.Host; 
+
+            _httpContextAccessor.HttpContext.Response.Redirect(baseUrl + BankTransferPaymentDefaults.PaymentInstructionsUrl + $"/{order.Id}");
         }
 
         public async Task<bool> HidePaymentMethod(IList<ShoppingCartItem> cart)
