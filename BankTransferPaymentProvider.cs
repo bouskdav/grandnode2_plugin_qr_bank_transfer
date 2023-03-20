@@ -79,20 +79,9 @@ namespace Payments.BankTransfer
         /// <param name="paymentTransaction">Payment transaction</param>
         public async Task PostRedirectPayment(PaymentTransaction paymentTransaction)
         {
-            ////nothing
-            //return Task.CompletedTask;
-
-            //var request = _httpContextAccessor.HttpContext.Request;
-            //string baseUri = $"{request.Scheme}://{request.Host}/";
-
             var order = await _orderService.GetOrderByGuid(paymentTransaction.OrderGuid);
 
-            // build URL
-            var store = await _storeService.GetStoreById(order.StoreId);
-
-            var baseUrl = (store.SslEnabled ? "https://" : "http://") + _httpContextAccessor.HttpContext.Request.Host; 
-
-            _httpContextAccessor.HttpContext.Response.Redirect(baseUrl + BankTransferPaymentDefaults.PaymentInstructionsUrl + $"/{order.Id}");
+            _httpContextAccessor.HttpContext.Response.Redirect(BankTransferPaymentDefaults.PaymentInstructionsUrl + $"/{order.Id}");
         }
 
         public async Task<bool> HidePaymentMethod(IList<ShoppingCartItem> cart)

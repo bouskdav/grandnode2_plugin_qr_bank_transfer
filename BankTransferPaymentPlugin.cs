@@ -48,6 +48,7 @@ namespace Payments.BankTransfer
                 DescriptionText = "<p>In cases where an order is placed, an authorized representative will contact you, personally or over telephone, to confirm the order.<br />After the order is confirmed, it will be processed.<br />Orders once confirmed, cannot be cancelled.</p><p>P.S. You can edit this text from admin panel.</p>",
                 QrCodeStringPattern = "SPD*1.0*ACC:{IBAN}+{SWIFT}*AM:{PRICE}*CC:{CURRENCY}*MSG:{SHOP_NAME} ORDER {ID}*X-VS:{VS}",
                 VariableSymbolPattern = "{yy}{######}",
+                SkipPaymentInfo = true,
             };
 
             await _settingService.SaveSetting(settings);
