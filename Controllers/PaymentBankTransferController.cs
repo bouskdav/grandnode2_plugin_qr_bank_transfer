@@ -5,6 +5,7 @@ using Grand.Business.Core.Interfaces.Common.Stores;
 using Grand.Domain.Orders;
 using Grand.Infrastructure;
 using Grand.Web.Common.Controllers;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Payments.BankTransfer.Domain;
 using Payments.BankTransfer.Infrastructure;
@@ -74,6 +75,7 @@ namespace Payments.BankTransfer.Controllers
             return View(model);
         }
 
+        [AllowAnonymous]
         public async Task<ActionResult> PaymentCode(string orderId)
         {
             byte[] qrCodeBytes = await _bankTransferService.GetQrCodeBytesAsPng(orderId, pixelsPerSegment: 20);
@@ -81,6 +83,7 @@ namespace Payments.BankTransfer.Controllers
             return File(qrCodeBytes, "image/x-png");
         }
 
+        [AllowAnonymous]
         public async Task<ActionResult> PaymentCodeByNumber(int? orderNumber)
         {
             Order order = await _orderService.GetOrderByNumber(orderNumber.Value);
