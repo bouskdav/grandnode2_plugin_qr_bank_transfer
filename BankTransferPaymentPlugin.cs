@@ -1,6 +1,8 @@
 using Grand.Business.Core.Extensions;
 using Grand.Business.Core.Interfaces.Common.Configuration;
 using Grand.Business.Core.Interfaces.Common.Localization;
+using Grand.Business.Core.Interfaces.Messages;
+using Grand.Domain.Messages;
 using Grand.Infrastructure.Plugins;
 
 namespace Payments.BankTransfer
@@ -15,6 +17,8 @@ namespace Payments.BankTransfer
         private readonly ISettingService _settingService;
         private readonly ITranslationService _translationService;
         private readonly ILanguageService _languageService;
+        private readonly IMessageTemplateService _messageTemplateService;
+        private readonly EmailAccountSettings _emailAccountSettings;
 
         #endregion
 
@@ -23,11 +27,15 @@ namespace Payments.BankTransfer
         public BankTransferPaymentPlugin(
             ISettingService settingService,
             ITranslationService translationService,
-            ILanguageService languageService)
+            ILanguageService languageService,
+            IMessageTemplateService messageTemplateService,
+            EmailAccountSettings emailAccountSettings)
         {
             _settingService = settingService;
             _translationService = translationService;
             _languageService = languageService;
+            _messageTemplateService = messageTemplateService;
+            _emailAccountSettings = emailAccountSettings;
         }
 
         #endregion
@@ -72,6 +80,17 @@ namespace Payments.BankTransfer
             await this.AddOrUpdatePluginTranslateResource(_translationService, _languageService, "Plugins.Payment.BankTransfer.DisplayOrder", "Display order");
             await this.AddOrUpdatePluginTranslateResource(_translationService, _languageService, "Plugins.Payment.BankTransfer.CurrencyWarning", "When scaning QR code, please always check in which currency the payment is processed.");
 
+            MessageTemplate messageTemplate = new MessageTemplate() 
+            {
+                Name = BankTransferPaymentDefaults.EmailPaymentQrCode,
+                Subject = "{{Store.Name}}. Payment instructions with QR code for order #{{Order.OrderNumber}}",
+                Body = "<p><a href=\"{{Store.URL}}\">{{Store.Name}}</a> <br />\r\n<br />\r\nDobrý den {{Order.CustomerFullName}}, <br />\r\nDìkujeme za Váš nákup na našem e-shopu <a href=\"{{Store.URL}}\">{{Store.Name}}</a>. Jelikož jste zvolil(a) platbu pøevodem, níže zasíláme platební QR kód:<br />\r\n<br />\r\n<img style=\"width: 200px;\" src=\"{{Store.URL}}Plugins/PaymentBankTransfer/PaymentCodeByNumber/{{Order.OrderNumber}}\" /><br />\r\n<br />\r\nOstatní údaje posíláme v dalším emailu.<br />\r\nS pozdravem, tým {{Store.Name}}",
+                IsActive = true,
+                LimitedToStores = false,
+                EmailAccountId = _emailAccountSettings.DefaultEmailAccountId
+            };
+
+            await _messageTemplateService.InsertMessageTemplate(messageTemplate);
 
             await base.Install();
         }

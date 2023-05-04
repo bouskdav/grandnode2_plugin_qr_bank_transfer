@@ -9,13 +9,23 @@ namespace Payments.BankTransfer
         public void RegisterEndpoint(IEndpointRouteBuilder endpointRouteBuilder)
         {
             endpointRouteBuilder.MapControllerRoute("Plugin.PaymentBankTransfer",
-                 "Plugins/PaymentBankTransfer/PaymentInfo",
+                 BankTransferPaymentDefaults.PaymentInstructionsUrl,
                  new { controller = "PaymentBankTransfer", action = "PaymentInfo", area = "" }
             );
 
             endpointRouteBuilder.MapControllerRoute("Plugin.PaymentBankTransferInstructions",
                  $"{BankTransferPaymentDefaults.PaymentInstructionsUrl}/{{orderId}}",
                  new { controller = "PaymentBankTransfer", action = "PaymentInstructions", area = "" }
+            );
+
+            endpointRouteBuilder.MapControllerRoute("Plugin.PaymentBankTransferCode",
+                 $"{BankTransferPaymentDefaults.PaymentCodeUrl}/{{orderId}}",
+                 new { controller = "PaymentBankTransfer", action = "PaymentCode", area = "" }
+            );
+
+            endpointRouteBuilder.MapControllerRoute("Plugin.PaymentBankTransferCodeByNumber",
+                 $"{BankTransferPaymentDefaults.PaymentCodeByNumberUrl}/{{orderNumber}}",
+                 new { controller = "PaymentBankTransfer", action = "PaymentCodeByNumber", area = "" }
             );
         }
 

@@ -14,6 +14,7 @@ namespace Payments.BankTransfer
         public void ConfigureServices(IServiceCollection services, IConfiguration configuration)
         {
             services.AddScoped<IBankTransferService, BankTransferService>();
+            services.AddScoped<IBankTransferMessageProvider, BankTransferMessageProvider>();
 
             services.AddScoped<IPaymentProvider, BankTransferPaymentProvider>();
             services.AddScoped<IWidgetProvider, BankTransferPaymentWidgetProvider>();

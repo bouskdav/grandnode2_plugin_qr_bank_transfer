@@ -2,12 +2,14 @@
 using Grand.Business.Core.Interfaces.Common.Configuration;
 using Grand.Business.Core.Interfaces.Common.Directory;
 using Grand.Business.Core.Interfaces.Common.Stores;
+using Grand.Domain.Orders;
 using Grand.Infrastructure;
 using Grand.Web.Common.Controllers;
 using Microsoft.AspNetCore.Mvc;
 using Payments.BankTransfer.Domain;
 using Payments.BankTransfer.Infrastructure;
 using Payments.BankTransfer.Models;
+using QRCoder;
 
 namespace Payments.BankTransfer.Controllers
 {
@@ -70,6 +72,22 @@ namespace Payments.BankTransfer.Controllers
             model.VariableSymbol = await _userFieldService.GetFieldsForEntity<string>(order, InvoiceConstants.INVOICE_VARIABLE_SYMBOL_FIELD_KEY);
 
             return View(model);
+        }
+
+        public async Task<ActionResult> PaymentCode(string orderId)
+        {
+            byte[] qrCodeBytes = await _bankTransferService.GetQrCodeBytesAsPng(orderId, pixelsPerSegment: 20);
+
+            return File(qrCodeBytes, "image/x-png");
+        }
+
+        public async Task<ActionResult> PaymentCodeByNumber(int? orderNumber)
+        {
+            Order order = await _orderService.GetOrderByNumber(orderNumber.Value);
+
+            byte[] qrCodeBytes = await _bankTransferService.GetQrCodeBytesAsPng(order, pixelsPerSegment: 20);
+
+            return File(qrCodeBytes, "image/x-png");
         }
     }
 }

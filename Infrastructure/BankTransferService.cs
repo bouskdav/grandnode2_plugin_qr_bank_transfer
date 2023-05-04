@@ -1,9 +1,17 @@
-﻿using Grand.Business.Core.Interfaces.Checkout.Orders;
+﻿using DotLiquid;
+using Grand.Business.Core.Interfaces.Checkout.Orders;
 using Grand.Business.Core.Interfaces.Common.Directory;
 using Grand.Business.Core.Interfaces.Common.Stores;
+using Grand.Business.Core.Interfaces.Customers;
+using Grand.Business.Core.Interfaces.Messages;
+using Grand.Business.Core.Utilities.Messages.DotLiquidDrops;
+using Grand.Domain.Customers;
+using Grand.Domain.Localization;
+using Grand.Domain.Messages;
 using Grand.Domain.Orders;
 using Grand.Domain.Payments;
 using Payments.BankTransfer.Domain;
+using QRCoder;
 using System.Text.RegularExpressions;
 
 namespace Payments.BankTransfer.Infrastructure
@@ -14,17 +22,47 @@ namespace Payments.BankTransfer.Infrastructure
         private readonly IUserFieldService _userFieldService;
         private readonly IOrderService _orderService;
         private readonly IStoreService _storeService;
+        private readonly IBankTransferMessageProvider _messageProviderService;
+        private readonly ICustomerService _customerService;
 
         public BankTransferService(
             BankTransferPaymentSettings bankTransferPaymentSettings,
             IUserFieldService userFieldService,
             IOrderService orderService,
-            IStoreService storeService) 
+            IStoreService storeService,
+            IBankTransferMessageProvider messageProviderService,
+            ICustomerService customerService) 
         {
             _bankTransferPaymentSettings = bankTransferPaymentSettings;
             _userFieldService = userFieldService;
             _orderService = orderService;
             _storeService = storeService;
+            _messageProviderService = messageProviderService;
+            _customerService = customerService;
+        }
+
+        public async Task<byte[]> GetQrCodeBytesAsPng(string orderId, int pixelsPerSegment = 20)
+        {
+            var order = await _orderService.GetOrderById(orderId);
+
+            if (order == null)
+            {
+                return null;
+            }
+
+            return await GetQrCodeBytesAsPng(order, pixelsPerSegment);
+        }
+
+        public async Task<byte[]> GetQrCodeBytesAsPng(Order order, int pixelsPerSegment = 20)
+        {
+            string qrCodeString = await GetQrCodeString(order);
+
+            QRCodeGenerator qrGenerator = new QRCodeGenerator();
+            QRCodeData qrCodeData = qrGenerator.CreateQrCode(qrCodeString, QRCodeGenerator.ECCLevel.Q);
+
+            PngByteQRCode qrCode = new PngByteQRCode(qrCodeData);
+
+            return qrCode.GetGraphic(pixelsPerSegment);
         }
 
         public async Task<string> GetQrCodeString(Order order)
@@ -66,6 +104,25 @@ namespace Payments.BankTransfer.Infrastructure
             }
 
             return await GetQrCodeString(order);
+        }
+
+        public async Task SendPaymentNotificationWithQRCode(string orderId)
+        {
+            Order order = await _orderService.GetOrderById(orderId);
+
+            if (order == null)
+            {
+                return;
+            }
+
+            await SendPaymentNotificationWithQRCode(order);
+        }
+
+        public async Task SendPaymentNotificationWithQRCode(Order order)
+        {
+            var customer = await _customerService.GetCustomerById(order.CustomerId);
+
+            _ = await _messageProviderService.SendQrPaymentMessage(order, customer, order.CustomerLanguageId);
         }
 
         public async Task<Order> SetNextAvailableNumberForOrder(Order order)
