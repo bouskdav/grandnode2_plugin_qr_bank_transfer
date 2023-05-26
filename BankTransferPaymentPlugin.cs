@@ -84,7 +84,7 @@ namespace Payments.BankTransfer
             {
                 Name = BankTransferPaymentDefaults.EmailPaymentQrCode,
                 Subject = "{{Store.Name}}. Payment instructions with QR code for order #{{Order.OrderNumber}}",
-                Body = "<p><a href=\"{{Store.URL}}\">{{Store.Name}}</a> <br />\r\n<br />\r\nDobrý den {{Order.CustomerFullName}}, <br />\r\nDìkujeme za Váš nákup na našem e-shopu <a href=\"{{Store.URL}}\">{{Store.Name}}</a>. Jelikož jste zvolil(a) platbu pøevodem, níže zasíláme platební QR kód:<br />\r\n<br />\r\n<img style=\"width: 200px;\" src=\"{{Store.URL}}Plugins/PaymentBankTransfer/PaymentCodeByNumber/{{Order.OrderNumber}}\" /><br />\r\n<br />\r\nOstatní údaje posíláme v dalším emailu.<br />\r\nS pozdravem, tým {{Store.Name}}",
+                Body = "<p><a href=\"{{Store.URL}}\">{{Store.Name}}</a> <br />\r\n<br />\r\nDobrý den {{Order.CustomerFullName}}, <br />\r\nDìkujeme za Váš nákup na našem e-shopu <a href=\"{{Store.URL}}\">{{Store.Name}}</a>. Jelikož jste zvolil(a) platbu pøevodem, níže zasíláme platební QR kód:<br />\r\n<br />\r\n<img style=\"width: 200px;\" src=\"{{Store.URL}}Plugins/PaymentBankTransfer/PaymentCodeByNumber/{{Order.OrderNumber}}.png\" /><br />\r\n<br />\r\nOstatní údaje posíláme v dalším emailu.<br />\r\nS pozdravem, tým {{Store.Name}}",
                 IsActive = true,
                 LimitedToStores = false,
                 EmailAccountId = _emailAccountSettings.DefaultEmailAccountId
