@@ -147,8 +147,11 @@ namespace Payments.BankTransfer.Infrastructure
             //event notification
             await _mediator.MessageTokensAdded(messageTemplate, liquidObject);
 
-            var toEmail = emailAccount.Email;
-            var toName = emailAccount.DisplayName;
+            //var toEmail = emailAccount.Email;
+            //var toName = emailAccount.DisplayName;
+
+            var toEmail = order.BillingAddress.Email;
+            var toName = $"{order.BillingAddress.FirstName} {order.BillingAddress.LastName}";
 
             return await SendNotification(messageTemplate, emailAccount,
                 languageId, liquidObject,

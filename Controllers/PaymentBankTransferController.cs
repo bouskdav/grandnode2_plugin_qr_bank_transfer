@@ -76,19 +76,19 @@ namespace Payments.BankTransfer.Controllers
         }
 
         [AllowAnonymous]
-        public async Task<ActionResult> PaymentCode(string orderId)
+        public async Task<ActionResult> PaymentCode(string orderId, int size = 20)
         {
-            byte[] qrCodeBytes = await _bankTransferService.GetQrCodeBytesAsPng(orderId, pixelsPerSegment: 20);
+            byte[] qrCodeBytes = await _bankTransferService.GetQrCodeBytesAsPng(orderId, pixelsPerSegment: size);
 
             return File(qrCodeBytes, "image/x-png");
         }
 
         [AllowAnonymous]
-        public async Task<ActionResult> PaymentCodeByNumber(int? orderNumber)
+        public async Task<ActionResult> PaymentCodeByNumber(int? orderNumber, int size = 20)
         {
             Order order = await _orderService.GetOrderByNumber(orderNumber.Value);
 
-            byte[] qrCodeBytes = await _bankTransferService.GetQrCodeBytesAsPng(order, pixelsPerSegment: 20);
+            byte[] qrCodeBytes = await _bankTransferService.GetQrCodeBytesAsPng(order, pixelsPerSegment: size);
 
             return File(qrCodeBytes, "image/x-png");
         }
