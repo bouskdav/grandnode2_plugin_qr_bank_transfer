@@ -122,6 +122,12 @@ namespace Payments.BankTransfer.Infrastructure
         {
             var customer = await _customerService.GetCustomerById(order.CustomerId);
 
+            string variableSymbol = await _userFieldService.GetFieldsForEntity<string>(order, InvoiceConstants.INVOICE_VARIABLE_SYMBOL_FIELD_KEY);
+            if (String.IsNullOrEmpty(variableSymbol))
+            {
+                order = await SetNextAvailableNumberForOrder(order);
+            }
+
             _ = await _messageProviderService.SendQrPaymentMessage(order, customer, order.CustomerLanguageId);
         }
 

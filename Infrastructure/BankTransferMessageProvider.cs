@@ -14,6 +14,7 @@ using Grand.Domain.Stores;
 using Grand.Infrastructure;
 using Grand.SharedKernel.Extensions;
 using MediatR;
+using Payments.BankTransfer.Domain;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -37,6 +38,7 @@ namespace Payments.BankTransfer.Infrastructure
 
         private readonly EmailAccountSettings _emailAccountSettings;
         private readonly CommonSettings _commonSettings;
+        private readonly IUserFieldService _userFieldService;
 
         #endregion
 
@@ -51,7 +53,8 @@ namespace Payments.BankTransfer.Infrastructure
             IGroupService groupService,
             IMediator mediator,
             EmailAccountSettings emailAccountSettings,
-            CommonSettings commonSettings)
+            CommonSettings commonSettings,
+            IUserFieldService userFieldService)
         {
             _messageTemplateService = messageTemplateService;
             _queuedEmailService = queuedEmailService;
@@ -62,6 +65,7 @@ namespace Payments.BankTransfer.Infrastructure
             _groupService = groupService;
             _emailAccountSettings = emailAccountSettings;
             _commonSettings = commonSettings;
+            _userFieldService = userFieldService;
             _mediator = mediator;
         }
 
@@ -144,6 +148,10 @@ namespace Payments.BankTransfer.Infrastructure
                 liquidBuilder.AddCustomerTokens(customer, store, _storeHelper.DomainHost, language);
 
             LiquidObject liquidObject = await liquidBuilder.BuildAsync();
+
+            string variableSymbol = await _userFieldService.GetFieldsForEntity<string>(order, InvoiceConstants.INVOICE_VARIABLE_SYMBOL_FIELD_KEY);
+            liquidObject.AdditionalTokens.Add("Order_VariableSymbol", variableSymbol);
+
             //event notification
             await _mediator.MessageTokensAdded(messageTemplate, liquidObject);
 
